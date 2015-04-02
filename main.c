@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 	double timeDif = 0.0;
 	
 	//pi	
-	const double PI = 4*atan(1);
+	const double PI = 4*atan(1);  //#define for const??? NJF 2015-03-31
 
 	//index variables
 	int i,j,k;

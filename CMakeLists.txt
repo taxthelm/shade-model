@@ -29,7 +29,7 @@ add_executable(
 	src/parlib.c
 	src/solarAltitude.c
 	src/sunDeclination.c
-	src/test.c
+	src/main.c
 	src/tilt.c
 	src/timeDifference.c
 	)

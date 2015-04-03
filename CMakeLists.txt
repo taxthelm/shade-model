@@ -14,6 +14,7 @@ project(ShadeModel)
 
 set(CMAKE_C_COMPILER mpicc)
 set(CMAKE_CXX_COMPILER mpicxx)
+add_definitions(-DPAR_MPI=1)
 
 include_directories(include)
 
@@ -25,6 +26,7 @@ add_executable(
 	src/azimuth.c
 	src/landReader.c
 	src/localHourAngle.c
+	src/parlib.c
 	src/solarAltitude.c
 	src/sunDeclination.c
 	src/main.c

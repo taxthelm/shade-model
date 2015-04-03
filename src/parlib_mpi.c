@@ -7,6 +7,12 @@
 //
 // ****************************************************************************
 
+#include <stdlib.h>
+#include <mpi.h>
+
+#include "parlib.h"
+//#include "parlib_mpi.h"
+
 MPI_Datatype
      par_datatypes[] =  { MPI_INT, MPI_FLOAT,
                           MPI_DOUBLE, MPI_CHAR };

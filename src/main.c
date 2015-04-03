@@ -75,10 +75,9 @@ int main(int argc, char** argv)
 	int psize;
 
 	int ierr;
-	int thread_safety;
-	ierr = MPI_Init_thread(&argc, &argv,MPI_THREAD_SERIALIZED,&thread_safety);
+	ierr = MPI_Init_thread(&argc, &argv,MPI_THREAD_SERIALIZED);
 	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-	MPI_Comm_size(MPI_COMM_WORLD,&psize);
+	MPI_Comm_size(MPI_COMM_WORLD,&size);
 
 	//Not including lower portions of triangular mesh
 	for(k = rank; k < 288; k += psize)

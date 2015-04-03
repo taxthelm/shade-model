@@ -8,8 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#define PAR_MPI 1
-#include "parlib.h"
+
+#include <mpi.h>
 
 #include "landStruct.h"
 #include "landReader.h"
@@ -73,7 +73,11 @@ int main(int argc, char** argv)
 
 	int rank;
 	int psize;
-	par_start(argc, argv, &psize, &rank);
+
+	int ierr;
+	ierr = MPI_Init_thread(&argc, &argv,MPI_THREAD_SERIALIZED);
+	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+	MPI_Comm_size(MPI_COMM_WORLD,&size);
 
 	//Not including lower portions of triangular mesh
 	for(k = rank; k < 288; k += psize)
@@ -195,7 +199,7 @@ int main(int argc, char** argv)
 		free(ourData[i]);
 	}
 	free(ourData);	
-	par_end( );
+	MPI_Finalize();
 	return 0;
 }
 

@@ -1,3 +1,11 @@
+/*
+File: landStruct.h
+
+Defines the structure which holds the physical characteristics
+for the geographical cell in the mesh.
+
+*/
+
 #ifndef LANDSTRUCT_H
 #define LANDSTRUCT_H
 

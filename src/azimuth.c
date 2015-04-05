@@ -16,10 +16,10 @@ ChangeLog
 
 void azimuth( 
 		double *azimuth, 
-		double solarAlt, 
-		double latitude, 
-		double declination, 
-		int time
+		double const solarAlt, 
+		double const latitude, 
+		double const declination, 
+		int const time
 		) {	
 
 	double lat_tmp = M_PI*latitude/180.0;

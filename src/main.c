@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 	char* fileName = "DEM.asc";
 	
 	//Variables will be set at runtime
-	LandData** ourData;
+	LandData* ourData;
 	int numRows=0;
 	int numCols=0;
 	double sunDeclin  = 0.0;
@@ -99,32 +99,32 @@ int main(int argc, char** argv)
 			for (j = 0; j < numCols; j++)
 			{
 
-				double currentSizeX = ourData[i][j].sizeX;
-				double currentSizeY = ourData[i][j].sizeY;
+				double currentSizeX = ourData[i*numRows + j].sizeX;
+				double currentSizeY = ourData[i*numRows + j].sizeY;
 				ourStep = currentSizeX;
 
 			
 				//Calculate the dark angle
-				darkAngle = acos(-tan(ourData[i][j].latitude) * tan(sunDeclin));
+				darkAngle = acos(-tan(ourData[i*numRows + j].latitude) * tan(sunDeclin));
 	
 				//For each thirty minute azimuth, calculate the horizon(in this day)			
 		
 				//-----			
-				timeDifference(&timeDif, ourData[i][j].thetaS, ourData[i][j].thetaL);
+				timeDifference(&timeDif, ourData[i*numRows + j].thetaS, ourData[i*numRows + j].thetaL);
 
 				localHourAngle(&localHrAngle,(double)(k * timeInterval), timeDif, 0.0, timeInterval);
-
+                //Can't 15.0*PI/180 be macroed? same with 30??? NJF
 				if (((localHrAngle < (darkAngle + PI - (15.0*PI/180))) && k < (86400/timeInterval/2))  || ((localHrAngle > (PI-darkAngle + (30.0*PI/180.0)) && k >= (86400/timeInterval/2))))
 				{	
-					ourData[i][j].shading[k] = 1.0;
+					ourData[i*numRows + j].shading[k] = 1.0;
 				}
 				else
 				{
 
 					//LATITUDE NEEDS TO BE IN RADIANS!!!!!!!!				
-					solarAltitude(&solarAlt, sunDeclin, ((ourData[i][j].latitude)*PI/180), localHrAngle);
+					solarAltitude(&solarAlt, sunDeclin, ((ourData[i*numRows + j].latitude)*PI/180), localHrAngle);
 
-					azimuth(&azi, solarAlt, ourData[i][j].latitude, sunDeclin, k * timeInterval);
+					azimuth(&azi, solarAlt, ourData[i*numRows + j].latitude, sunDeclin, k * timeInterval);
 
 					stepX = ourStep*-sin(azi);			
 					stepY = ourStep*cos(azi);		
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 					tempX = lenX/currentSizeX + (double)j;
 					tempY = lenY/currentSizeY + (double)i;
 
-					ourData[i][j].shading[k] = 0;
+					ourData[i*numRows + j].shading[k] = 0;
 	
 					solarAlt = tan(solarAlt);				
 	
@@ -153,11 +153,11 @@ int main(int argc, char** argv)
 
 						if(roundTempX != i ||  roundTempY != j) 
 						{
-							tempSlope = (ourData[roundTempY][roundTempX].elevation - ourData[i][j].elevation)/sqrt(lenX*lenX + lenY*lenY);	
+							tempSlope = (ourData[roundTempY*numRows + roundTempX].elevation - ourData[i*numRows + j].elevation)/sqrt(lenX*lenX + lenY*lenY);	
 				
 							if(solarAlt <= tempSlope)
 							{	
-								ourData[i][j].shading[k] = 1;
+								ourData[i*numRows + j].shading[k] = 1;
 								break;
 							}
 						}												
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
 
 				}
 				//Print all of shade data to files in .m format
-				fprintf(thisFile, "%d ", ourData[i][j].shading[k]);
+				fprintf(thisFile, "%d ", ourData[i*numRows + j].shading[k]);
 
 			}
 
@@ -199,10 +199,6 @@ int main(int argc, char** argv)
 
 
 	//Release all memory allocation
-	for(i = 0; i < numRows; i++)
-	{
-		free(ourData[i]);
-	}
 	free(ourData);
 	
 	MPI_Finalize();

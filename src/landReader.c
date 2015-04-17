@@ -4,7 +4,7 @@
 #include "landStruct.h"
 #include "tilt.h"
 
-LandData** extractData(char *inFileName, int* num_Cols, int* num_Rows)
+LandData* extractData(char *inFileName, int* num_Cols, int* num_Rows)
 {
 	FILE *inFile;
 	int numCols = 0;
@@ -37,11 +37,12 @@ LandData** extractData(char *inFileName, int* num_Cols, int* num_Rows)
 	fscanf(inFile, "%*s %f", &yllcorner);
 	fscanf(inFile, "%*s %f", &cellsize);
 	
-	LandData** structMat = (LandData**)malloc(sizeof(LandData*)*(numRows)); 
-
-	for(i = 0; i < numRows; i++)
+    //LandData** structMat = (LandData**)malloc(sizeof(LandData*)*(numRows)); 
+    //Lineraize this 2D access using strided access of contiguous memory        NJF 2015-04-14
+    LandData* structMat = (LandData*)(malloc(sizeof(LandData)*numRows*numCols));	
+    for(i = 0; i < numRows; i++)
 	{
-		structMat[i] = (LandData*)malloc(sizeof(LandData)*(numCols));
+		//structMat[i] = (LandData*)malloc(sizeof(LandData)*(numCols));
 		for(j = 0; j < numCols; j++)
 		{
 			fscanf(inFile, "%f", &elevation);
@@ -57,14 +58,17 @@ LandData** extractData(char *inFileName, int* num_Cols, int* num_Rows)
 			temp.latitude = latitude*180.0/(4*atan(1));	//convert the latitude to degrees	
 			temp.thetaL = -106 + (xllcorner - ((j/2)-1))/(6378100.0 * cos(latitude));
 			temp.thetaS = thetaS;
-			structMat[i][j] = temp;
+            //Strided access i*row size gives current row, +j give column in that row
+			structMat[i*numRows + j] = temp;
 		}
 	}
 	
 	//Fill the secondary cells of matrix, used for triangular mesh
-	for(i = 0; i < (numRows-1); i++)
+    const int rows = numRows - 1;
+    const int cols = numCols - 1;
+	for(i = 0; i < (rows); i++)
 	{
-		for(j = 0; j < (numCols-1); j++)
+		for(j = 0; j < (cols); j++)
 		{
 			//LandData temp;
 			LandData temp1;
@@ -78,9 +82,9 @@ LandData** extractData(char *inFileName, int* num_Cols, int* num_Rows)
 			//temp.sizeX = cellsize;
 			//temp.sizeY = cellsize;
 			
-			temp1 = structMat[i][j+1];
-			temp2 = structMat[i+1][j];			
-			temp3 = structMat[i][j];
+			temp1 = structMat[i*rows + j+1];
+			temp2 = structMat[(i+1)*rows + j];			
+			temp3 = structMat[i*rows + j];
 			
 			//calculate the angles of each struct			
 			//tilt(&temp, &temp1, &temp2, 0);
@@ -88,7 +92,7 @@ LandData** extractData(char *inFileName, int* num_Cols, int* num_Rows)
 			
 			
 			//if(i == 0 && j-1 == 0)
-			structMat[i][j] = temp3;
+			structMat[i*rows + j] = temp3;
 			//structMat[i][j] = temp;
 		}
 	}	

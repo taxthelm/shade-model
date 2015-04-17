@@ -11,6 +11,6 @@
 #ifndef LANDREADER_H
 #define LANDREADER_H
 
-LandData** extractData(char *infileName, int* numCols, int* numRows);
+LandData* extractData(char *infileName, int* numCols, int* numRows);
 
 #endif

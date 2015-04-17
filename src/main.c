@@ -116,7 +116,7 @@ int main(int argc, char** argv)
                 //Can't 15.0*PI/180 be macroed? same with 30??? NJF
 				if (((localHrAngle < (darkAngle + PI - (15.0*PI/180))) && k < (86400/timeInterval/2))  || ((localHrAngle > (PI-darkAngle + (30.0*PI/180.0)) && k >= (86400/timeInterval/2))))
 				{	
-					ourData[i*numRows + j].shading[k] = 1.0;
+					ourData[i*numRows + j].shading[k] = 1;
 				}
 				else
 				{

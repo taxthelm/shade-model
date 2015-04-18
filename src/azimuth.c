@@ -23,8 +23,9 @@ void azimuth(
 		) {	
 
 	double lat_tmp = M_PI*latitude/180.0;
-	*azimuth = (sin(solarAlt)*sin(lat_tmp) - sin(declination)) / 
-		(cos(solarAlt) * cos(lat_tmp));
+	*azimuth = 
+		(sin(solarAlt)*sin(lat_tmp) - sin(declination)) / 
+		(cos(solarAlt)*cos(lat_tmp));
 
 	*azimuth = acos(*azimuth);
 

@@ -27,7 +27,7 @@ void timeDifference(
 		double const thetaL
 		) {
 	
-	*deltaT1=  0.06666666666666666*(thetaL-thetaS);
+	*deltaT1 = 0.06666666666666666*(thetaL-thetaS);
 
 }
 

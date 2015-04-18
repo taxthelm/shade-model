@@ -4,7 +4,12 @@
 #include "landStruct.h"
 #include "tilt.h"
 
-void tilt(LandData *mainPlot, LandData *xNeighbor, LandData *yNeighbor, int upperLower){
+void tilt(
+		LandData * restrict mainPlot, 
+		LandData const * restrict xNeighbor, 
+		LandData const * restrict yNeighbor, 
+		int upperLower) {
+
 	if (upperLower == 1){
 		mainPlot->angleX = atan((xNeighbor->elevation - mainPlot->elevation)/mainPlot->sizeX);
 		mainPlot->angleY = atan((mainPlot->elevation - yNeighbor->elevation)/mainPlot->sizeY);
@@ -12,5 +17,6 @@ void tilt(LandData *mainPlot, LandData *xNeighbor, LandData *yNeighbor, int uppe
 		mainPlot->angleX = atan((mainPlot->elevation - xNeighbor->elevation)/mainPlot->sizeX);
 		mainPlot->angleY = atan((yNeighbor->elevation - mainPlot->elevation)/mainPlot->sizeY); 
 	}
+
 }
 

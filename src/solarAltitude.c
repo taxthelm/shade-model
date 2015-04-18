@@ -1,9 +1,11 @@
 #include <math.h>
 
+#include "shadem.h"
+
 #include "solarAltitude.h"
 
 void solarAltitude(
-		double *solarAlt,
+		double * const solarAlt,
 		double const sunDeclination, 
 		double const latitude, 
 		double const localHourAngle)

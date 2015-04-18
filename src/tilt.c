@@ -6,9 +6,9 @@
 
 void tilt(
 		LandData * restrict mainPlot, 
-		LandData const * restrict xNeighbor, 
-		LandData const * restrict yNeighbor, 
-		int upperLower) {
+		LandData const * const restrict xNeighbor, 
+		LandData const * const restrict yNeighbor, 
+		int const upperLower) {
 
 	if (upperLower == 1){
 		mainPlot->angleX = atan((xNeighbor->elevation - mainPlot->elevation)/mainPlot->sizeX);

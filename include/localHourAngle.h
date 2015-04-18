@@ -21,7 +21,7 @@ Original:
 
 // Returns tao, the local hour angle. (in degrees) 
 void localHourAngle( 
-		double *tau, 
+		double * const tau, 
 		double const Ts, 
 		double const deltaT1, 
 		double const deltaT2, 

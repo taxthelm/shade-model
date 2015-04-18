@@ -14,6 +14,8 @@ ChangeLog:
 
 #include <mpi.h>
 
+#include "shadem.h"
+
 #include "landStruct.h"
 #include "tilt.h"
 
@@ -91,8 +93,8 @@ int extractData(
 
 	/*
 	   I've moved the file reading portion outside the assignment loop to engage
-	   a threading model using OpenMP. This is because the file is not binary and
-	   is text based.
+	   a threading model using OpenMP. This is because the file is not structured
+	   well for multithread reading and is text based.
 	*/
 	double t1,t2;
 	double *elevation_arr;
@@ -107,10 +109,8 @@ int extractData(
 	// Close the geographic elevation file
 	fclose(input_file);
 
-t1 = MPI_Wtime();	
+	t1 = MPI_Wtime();	
 #pragma omp parallel for
-	{
-
     for(i = 0; i < numRows; i++)
 	{
 		//structMat[i] = (LandData*)malloc(sizeof(LandData)*(numCols));
@@ -137,8 +137,9 @@ t1 = MPI_Wtime();
 			
 			//calculation of longitude
 			//temp.latitude = latitude*180.0/(4*atan(1));	//convert the latitude to degrees
-			structMat[index].latitude = latitude * 180.0/M_PI;
-			
+			//structMat[index].latitude = latitude * 180.0/M_PI;
+			structMat[index].latitude = RadToDeg(latitude);
+
 			//            V-- is this thetaS?
 			//temp.thetaL = -106 + (xllcorner - ((j/2)-1))/(6378100.0 * cos(latitude));
 			structMat[index].thetaL = -106.0 + (xllcorner - ((j/2)-1))/(6378100.0 * cos(latitude));
@@ -152,7 +153,6 @@ t1 = MPI_Wtime();
 		}
 	}
 
-	}
 	t2 = MPI_Wtime();
 	printf("Time for first pass of calculations on grid: %lf seconds \n",t2-t1);
 
@@ -202,13 +202,13 @@ t1 = MPI_Wtime();
 	t2 = MPI_Wtime();
 	printf("Time for second pass of calculations on grid: %lf seconds \n",t2-t1);
 
-	//fclose(input_file);
-	
+	// Set the final values for num_Rows & num_Cols
 	*num_Rows = numRows;
 	*num_Cols = numCols;
 	
 	// Free the elevation_arr data
 	free(elevation_arr);
 
+	// Return the data
 	return structMat;
 }

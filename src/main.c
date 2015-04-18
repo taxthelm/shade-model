@@ -15,6 +15,8 @@
 
 #include <mpi.h>
 
+#include "shadem.h"
+
 #include "landStruct.h"
 #include "landReader.h"
 #include "sunDeclination.h"
@@ -128,19 +130,27 @@ int main(int argc, char* argv[])
 				//For each thirty minute azimuth, calculate the horizon(in this day)			
 		
 				//-----			
-				timeDifference(&timeDif, ourData[index].thetaS, ourData[index].thetaL);
+				timeDifference(
+						&timeDif, 
+						ourData[index].thetaS, 
+						ourData[index].thetaL
+						);
 
 				localHourAngle( 
 						&localHrAngle,
 						(double)(k * timeInterval),
 						timeDif,
 						0.0, 
-						timeInterval );
+						timeInterval 
+						);
 
                 //Can't 15.0*PI/180 be macroed? same with 30??? NJF
 				if ( 
-						((localHrAngle < (darkAngle + M_PI - (15.0*M_PI/180))) && k < (86400/timeInterval/2))  || 
-						((localHrAngle > (M_PI-darkAngle + (30.0*M_PI/180.0)) && k >= (86400/timeInterval/2)))
+						//((localHrAngle < (darkAngle + M_PI - (15.0*M_PI/180))) && k < (86400/timeInterval/2))  || 
+						//((localHrAngle > (M_PI-darkAngle + (30.0*M_PI/180.0)) && k >= (86400/timeInterval/2)))
+
+						( (localHrAngle < (darkAngle + M_PI - DegToRad(15.0)) && k <  (86400/timeInterval/2)) )  || 
+						( (localHrAngle > (M_PI-darkAngle + DegToRad(30.0))   && k >= (86400/timeInterval/2)) )
 				   ){
 					ourData[index].shading[k] = 1;
 				}

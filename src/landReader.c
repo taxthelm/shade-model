@@ -27,7 +27,7 @@ LandData* extractData(
 /*
 int extractData(
 		char const *elevation_file,
-		LandData **elevation_data,
+		LandData *elevation_data,
 		unsigned int *num_columns,
 		unsigned int *num_rows
 		){

@@ -15,6 +15,8 @@
 
 #include <mpi.h>
 
+#include "shadem.h"
+
 #include "landStruct.h"
 #include "landReader.h"
 #include "sunDeclination.h"
@@ -23,31 +25,46 @@
 #include "solarAltitude.h"
 #include "azimuth.h"
 
-int main(int argc, char** argv)
-{	
+int main(int argc, char* argv[])
+{
+
+	// Initialize MPI
+	int ierr;
+	int thd_safety;
+	ierr = MPI_Init_thread(&argc,&argv,MPI_THREAD_SERIALIZED,&thd_safety);
+	int psize;
+	int rank;
+	MPI_Comm_size(MPI_COMM_WORLD,&psize);
+	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+
 	//Set to the day of shading calculation
 	//January 1  = 0; December 31 = 364
+	// Do we need to consider leap years?
 	int Day = 20;
 
 	//Interval of time to have shading information for
 	//Must change landStruct shade array size to 86400/timeInterval
-	int timeInterval = 300;
+	int timeInterval = 300; // This is a delta time for the day i.e., 300 seconds
 
 	//Set to the file name to read elevation data from
-	char* fileName = "DEM.asc";
+	char *fileName = "DEM.asc";
 	
 	//Variables will be set at runtime
-	LandData** ourData;
-	int numRows=0;
-	int numCols=0;
-	double sunDeclin  = 0.0;
+	LandData* ourData;
+	int numRows         = 0;
+	int numCols         = 0;
+	double sunDeclin    = 0.0;
 	double localHrAngle = 0.0;
-	double azi = 0.0;	
-	double solarAlt = 0.0;
-	double timeDif = 0.0;
+	double azi          = 0.0;	
+	double solarAlt     = 0.0;
+	double timeDif      = 0.0;
 	
-	//pi	
-	const double PI = 4*atan(1);  //#define for const??? NJF 2015-03-31
+	// Pi - POSIX defines M_PI in the math library header. Therefore,
+    //      change to using the definition and if the implementation 
+    //      does not include M_PI, define our own using a simple def.
+
+	const double PI = M_PI;
+	//const double PI = 4*atan(1);  //#define for const??? NJF 2015-03-31
 
 	//index variables
 	int i,j,k;
@@ -56,11 +73,22 @@ int main(int argc, char** argv)
 
 	//ourData is now populated with the necessary information
 	//from the inpt file.
+
+	double time0  = 0.0;
+	double time1  = 0.0;
+	double deltat = 0.0;
+
+	printf("Reading file: %s\n",fileName);
+	time0 = MPI_Wtime(); // Technically undefined until an MPI_Init routine is called.
 	ourData = extractData(fileName, &numCols, &numRows);
-	
+	time1 = MPI_Wtime();
+	printf("Time to read and initialize data: %lf seconds\n",time1-time0);
+
 	//Calculate the sun declination for the given day.	
 	sunDeclination(&sunDeclin,Day);
 
+	// May need to move most of this inside the loop for C99 to help with
+	// loop threading. These need to be private.
 	double stepX;
 	double stepY;
 	double lenX;
@@ -75,14 +103,7 @@ int main(int argc, char** argv)
 	double ourStep;
 	double darkAngle;
 
-	int rank;
-	int psize;
-	int ierr;
-	int thd_safety;
 
-	ierr = MPI_Init_thread(&argc,&argv,MPI_THREAD_SERIALIZED,&thd_safety);
-	MPI_Comm_size(MPI_COMM_WORLD,&psize);
-	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
 	//Not including lower portions of triangular mesh
 	for(k = rank; k < 288; k += psize)
@@ -98,70 +119,105 @@ int main(int argc, char** argv)
 		{
 			for (j = 0; j < numCols; j++)
 			{
+				unsigned int index = i*numRows + j;
 
-				double currentSizeX = ourData[i][j].sizeX;
-				double currentSizeY = ourData[i][j].sizeY;
+				double currentSizeX = ourData[index].sizeX;
+				double currentSizeY = ourData[index].sizeY;
 				ourStep = currentSizeX;
 
 			
 				//Calculate the dark angle
-				darkAngle = acos(-tan(ourData[i][j].latitude) * tan(sunDeclin));
+				darkAngle = acos( -tan( ourData[index].latitude ) * tan(sunDeclin) );
 	
 				//For each thirty minute azimuth, calculate the horizon(in this day)			
 		
 				//-----			
-				timeDifference(&timeDif, ourData[i][j].thetaS, ourData[i][j].thetaL);
+				timeDifference(
+						&timeDif, 
+						ourData[index].thetaS, 
+						ourData[index].thetaL
+						);
 
-				localHourAngle(&localHrAngle,(double)(k * timeInterval), timeDif, 0.0, timeInterval);
+				localHourAngle( 
+						&localHrAngle,
+						(double)(k * timeInterval),
+						timeDif,
+						0.0, 
+						timeInterval 
+						);
 
-				if (((localHrAngle < (darkAngle + PI - (15.0*PI/180))) && k < (86400/timeInterval/2))  || ((localHrAngle > (PI-darkAngle + (30.0*PI/180.0)) && k >= (86400/timeInterval/2))))
-				{	
-					ourData[i][j].shading[k] = 1.0;
+                //Can't 15.0*PI/180 be macroed? same with 30??? NJF
+				if ( 
+						//((localHrAngle < (darkAngle + M_PI - (15.0*M_PI/180))) && k < (86400/timeInterval/2))  || 
+						//((localHrAngle > (M_PI-darkAngle + (30.0*M_PI/180.0)) && k >= (86400/timeInterval/2)))
+
+						( (localHrAngle < (darkAngle + M_PI - DegToRad(15.0)) && k <  (86400/timeInterval/2)) )  || 
+						( (localHrAngle > (M_PI - darkAngle + DegToRad(30.0)) && k >= (86400/timeInterval/2)) )
+				   ){
+					ourData[index].shading[k] = 1;
 				}
-				else
-				{
 
-					//LATITUDE NEEDS TO BE IN RADIANS!!!!!!!!				
-					solarAltitude(&solarAlt, sunDeclin, ((ourData[i][j].latitude)*PI/180), localHrAngle);
+				else {
 
-					azimuth(&azi, solarAlt, ourData[i][j].latitude, sunDeclin, k * timeInterval);
+					// LATITUDE NEEDS TO BE IN RADIANS!!!!!!!!				
+					solarAltitude(
+							&solarAlt, 
+							sunDeclin, 
+							DegToRad(ourData[index].latitude),
+							localHrAngle );
 
-					stepX = ourStep*-sin(azi);			
-					stepY = ourStep*cos(azi);		
+					azimuth(
+							&azi,
+							solarAlt, 
+							ourData[index].latitude,
+							sunDeclin,
+							k*timeInterval );
+
+					stepX = -ourStep*sin(azi);			
+					stepY =  ourStep*cos(azi);		
 			
-					lenX = 0.0;
-					lenY = 0.0;
+					// Why set to zero then increment? JDB
+					//lenX = 0.0;
+					//lenY = 0.0;
 
 				 	stepTempX = stepX / currentSizeX;
 				   	stepTempY = stepY / currentSizeY;
 
-					lenX += stepX;
-					lenY += stepY;
+					lenX = stepX;
+					lenY = stepY;
 
 					tempX = lenX/currentSizeX + (double)j;
 					tempY = lenY/currentSizeY + (double)i;
 
-					ourData[i][j].shading[k] = 0;
+					ourData[index].shading[k] = 0;
 	
 					solarAlt = tan(solarAlt);				
 	
 					//Step along azimuth until off of grid or the observer point is determind to be shaded
-					while (tempX >= 0 && tempX <= (numCols-1) && tempY >= 0 && tempY <= (numRows - 1))
-					{	
+					while (
+							tempX >= 0              && 
+							tempX <= (numCols-1)    && 
+							tempY >= 0              && 
+							tempY <= (numRows - 1) ) 
+					{
+
 						roundTempX = (int)round(tempX);
 						roundTempY = (int)round(tempY);			
 
-						if(roundTempX != i ||  roundTempY != j) 
+						if(
+							roundTempX != i ||  
+							roundTempY != j )
 						{
-							tempSlope = (ourData[roundTempY][roundTempX].elevation - ourData[i][j].elevation)/sqrt(lenX*lenX + lenY*lenY);	
+							
+							tempSlope = (ourData[roundTempY*numRows + roundTempX].elevation - ourData[index].elevation) / sqrt(lenX*lenX + lenY*lenY);	
 				
-							if(solarAlt <= tempSlope)
+							if(solarAlt <= tempSlope) 
 							{	
-								ourData[i][j].shading[k] = 1;
+								ourData[index].shading[k] = 1;
 								break;
 							}
-						}												
-			
+						}			
+
 						lenX += stepX;		
 						lenY += stepY;
 
@@ -171,13 +227,19 @@ int main(int argc, char** argv)
 					}
 
 				}
-				//Print all of shade data to files in .m format
-				fprintf(thisFile, "%d ", ourData[i][j].shading[k]);
+
+				// Print all of shade data to files in .m format
+				fprintf(
+						thisFile, 
+						"%d ",
+						ourData[index].shading[k]
+						);
 
 			}
 
 			fprintf(thisFile, "; ");
 		}
+
 /*
 		int timeHours = (int)floor(k*timeInterval/3600);
 		int timeMinutes = (int)((k*timeInterval)/60);
@@ -199,10 +261,6 @@ int main(int argc, char** argv)
 
 
 	//Release all memory allocation
-	for(i = 0; i < numRows; i++)
-	{
-		free(ourData[i]);
-	}
 	free(ourData);
 	
 	MPI_Finalize();

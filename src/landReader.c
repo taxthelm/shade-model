@@ -64,8 +64,6 @@ int extractData(
 	// Potential variables
 	double thetaS = -106.0;	// Standard meridian longitude
 
-	int i,j;
-
 	// Open the file to be read
 	input_file = fopen(inFileName, "r");
 	
@@ -98,7 +96,7 @@ int extractData(
 	double *elevation_arr;
 	elevation_arr = (double*)malloc(sizeof(double)*numRows*numCols);
 	t1 = MPI_Wtime();
-	for (i = 0; i < numRows*numCols; i++){
+	for (unsigned int i = 0; i < numRows*numCols; i++){
 		fscanf(input_file, "%lf ",&(elevation_arr[0]));
 	}
 	t2 = MPI_Wtime();
@@ -108,11 +106,11 @@ int extractData(
 	fclose(input_file);
 
 	t1 = MPI_Wtime();	
-#pragma omp parallel for private(i)
-    for(i = 0; i < numRows; i++)
+#pragma omp parallel for 
+    for(unsigned int i = 0; i < numRows; i++)
 	{
 		//structMat[i] = (LandData*)malloc(sizeof(LandData)*(numCols));
-		for(j = 0; j < numCols; j++)
+		for(unsigned int j = 0; j < numCols; j++)
 		{
 			unsigned int index = i*numRows + j;
 			// Read the elevation, perhaps we can read in an elevation array, one read of the file
@@ -160,11 +158,10 @@ int extractData(
     int const cols = numCols - 1;
 
 	t1 = MPI_Wtime();
-#pragma omp parallel for private(i)
-	for(i = 0; i < (rows); i++)
-	{
-		for(j = 0; j < (cols); j++)
-		{
+#pragma omp parallel for 
+	for(unsigned int i = 0; i < (rows); i++) {
+		for(unsigned int j = 0; j < (cols); j++) {
+
 			//LandData temp;
 			// Lots of extra non-used memory here, potentially allocated each loop. Not needed.
 			//LandData temp1;

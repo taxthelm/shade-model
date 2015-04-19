@@ -88,8 +88,6 @@ int extractData(
     //LandData** structMat = (LandData**)malloc(sizeof(LandData*)*(numRows)); 
     //Lineraize this 2D access using strided access of contiguous memory        NJF 2015-04-14
     LandData* structMat = (LandData*)(malloc(sizeof(LandData)*numRows*numCols));
-	unsigned int index;
-	
 
 	/*
 	   I've moved the file reading portion outside the assignment loop to engage
@@ -116,7 +114,7 @@ int extractData(
 		//structMat[i] = (LandData*)malloc(sizeof(LandData)*(numCols));
 		for(j = 0; j < numCols; j++)
 		{
-			index = i*numRows + j;
+			unsigned int index = i*numRows + j;
 			// Read the elevation, perhaps we can read in an elevation array, one read of the file
 			// is generally a slow process. Perhaps we can read in a very long stride, do some quick
 			// calculations, and read in again.

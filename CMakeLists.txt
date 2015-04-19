@@ -10,10 +10,14 @@
 
 cmake_minimum_required (VERSION 2.8)
 
+#set(CMAKE_C_COMPILER mpicc)
+#set(CMAKE_CXX_COMPILER mpicxx)
+set(CMAKE_C_FLAGS "-fPIC")
 project(ShadeModel)
 
-set(CMAKE_C_COMPILER mpicc)
-set(CMAKE_CXX_COMPILER mpicxx)
+#set(CMAKE_C_COMPILER mpicc)
+#set(CMAKE_CXX_COMPILER mpicxx)
+#set(CMAKE_C_FLAGS "-fPIC")
 
 include_directories(include)
 

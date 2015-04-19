@@ -19,7 +19,7 @@ On:
 /************ FUNCTIONS ***************************/
 // see project.h
 void localHourAngle(
-		double * const tau, 
+		double * restrict const tau, 
 		double const Ts, 
 		double const deltaT1, 
 		double const deltaT2, 

@@ -5,9 +5,9 @@
 #include "tilt.h"
 
 void tilt(
-		LandData * restrict mainPlot, 
-		LandData const * const restrict xNeighbor, 
-		LandData const * const restrict yNeighbor, 
+		LandData * restrict const mainPlot, 
+		LandData const * restrict const xNeighbor, 
+		LandData const * restrict const yNeighbor, 
 		int const upperLower) {
 
 	if (upperLower == 1){

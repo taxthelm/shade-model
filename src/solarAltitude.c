@@ -5,7 +5,7 @@
 #include "solarAltitude.h"
 
 void solarAltitude(
-		double * const solarAlt,
+		double * restrict const solarAlt,
 		double const sunDeclination, 
 		double const latitude, 
 		double const localHourAngle)

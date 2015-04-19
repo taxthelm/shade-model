@@ -11,9 +11,9 @@ ChangeLog
 #define TILT_H
 
 void tilt(
-		LandData * restrict mainPlot,	// plot of land tilt angles are calculated for
-		LandData const * const restrict rightNeighbor, 	// plot of land directly to the right of the main plot
-		LandData const * const restrict lowerNeighbor,	// plot of land directly below the main plot
+		LandData * restrict const mainPlot,	// plot of land tilt angles are calculated for
+		LandData const * restrict const rightNeighbor, 	// plot of land directly to the right of the main plot
+		LandData const * restrict const lowerNeighbor,	// plot of land directly below the main plot
 		int const upperLower			// tag for upper or lower trianglular plot. 1 denotes upper
 		);
 		

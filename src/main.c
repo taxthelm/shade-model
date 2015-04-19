@@ -82,11 +82,13 @@ int main(int argc, char* argv[])
 	time0 = MPI_Wtime(); // Technically undefined until an MPI_Init routine is called.
 	ourData = extractData(fileName, &numCols, &numRows);
 	time1 = MPI_Wtime();
-	printf("Time to read file: %lf seconds\n",time1-time0);
+	printf("Time to read and initialize data: %lf seconds\n",time1-time0);
 
 	//Calculate the sun declination for the given day.	
 	sunDeclination(&sunDeclin,Day);
 
+	// May need to move most of this inside the loop for C99 to help with
+	// loop threading. These need to be private.
 	double stepX;
 	double stepY;
 	double lenX;
@@ -150,7 +152,7 @@ int main(int argc, char* argv[])
 						//((localHrAngle > (M_PI-darkAngle + (30.0*M_PI/180.0)) && k >= (86400/timeInterval/2)))
 
 						( (localHrAngle < (darkAngle + M_PI - DegToRad(15.0)) && k <  (86400/timeInterval/2)) )  || 
-						( (localHrAngle > (M_PI-darkAngle + DegToRad(30.0))   && k >= (86400/timeInterval/2)) )
+						( (localHrAngle > (M_PI - darkAngle + DegToRad(30.0)) && k >= (86400/timeInterval/2)) )
 				   ){
 					ourData[index].shading[k] = 1;
 				}
@@ -161,7 +163,7 @@ int main(int argc, char* argv[])
 					solarAltitude(
 							&solarAlt, 
 							sunDeclin, 
-							((ourData[index].latitude)*M_PI/180),
+							DegToRad(ourData[index].latitude),
 							localHrAngle );
 
 					azimuth(
@@ -172,7 +174,7 @@ int main(int argc, char* argv[])
 							k*timeInterval );
 
 					stepX = -ourStep*sin(azi);			
-					stepY = ourStep*cos(azi);		
+					stepY =  ourStep*cos(azi);		
 			
 					// Why set to zero then increment? JDB
 					//lenX = 0.0;

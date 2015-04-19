@@ -110,7 +110,7 @@ int extractData(
 	fclose(input_file);
 
 	t1 = MPI_Wtime();	
-#pragma omp parallel for
+#pragma omp parallel for private(i)
     for(i = 0; i < numRows; i++)
 	{
 		//structMat[i] = (LandData*)malloc(sizeof(LandData)*(numCols));
@@ -162,6 +162,7 @@ int extractData(
     int const cols = numCols - 1;
 
 	t1 = MPI_Wtime();
+#pragma omp parallel for private(i)
 	for(i = 0; i < (rows); i++)
 	{
 		for(j = 0; j < (cols); j++)

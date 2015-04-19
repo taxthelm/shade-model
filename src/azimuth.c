@@ -18,7 +18,7 @@ ChangeLog
 #include "tilt.h"
 
 void azimuth( 
-		double *azimuth, 
+		double * restrict const azimuth, 
 		double const solarAlt, 
 		double const latitude, 
 		double const declination, 

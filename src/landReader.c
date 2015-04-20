@@ -97,7 +97,7 @@ int extractData(
 	elevation_arr = (double*)malloc(sizeof(double)*numRows*numCols);
 	t1 = MPI_Wtime();
 	for (unsigned int i = 0; i < numRows*numCols; i++){
-		fscanf(input_file, "%lf ",&(elevation_arr[0]));
+		fscanf(input_file, "%lf ",&(elevation_arr[i]));
 	}
 	t2 = MPI_Wtime();
 	printf("Time to read elevation data: %lf seconds\n",t2-t1);

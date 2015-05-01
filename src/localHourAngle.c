@@ -10,22 +10,26 @@ On:
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>
-#include"localHourAngle.h"
+
+#include "shadem.h"
+
+#include "localHourAngle.h"
 
 
 /************ FUNCTIONS ***************************/
 // see project.h
-void localHourAngle( double *tau, double Ts, double deltaT1, double deltaT2, int timeStep)
-{
-   if(Ts<43200.0)
-	{
-   	*tau= ((Ts/3600)+12-deltaT1+deltaT2)*15*(4*atan(1)/180);
-   }
-	else   
-   {
-		*tau= ((Ts/3600)-12-deltaT1+deltaT2)*15*(4*atan(1)/180);   
-	}
+void localHourAngle(
+		double * restrict const tau, 
+		double const Ts, 
+		double const deltaT1, 
+		double const deltaT2, 
+		int const timeStep
+		) {
+	
+	if (Ts<43200.0) *tau = ( (Ts/3600) + 12 - deltaT1 + deltaT2 ) * DegToRad(15.0);
+	else            *tau = ( (Ts/3600) - 12 - deltaT1 + deltaT2 ) * DegToRad(15.0); // * (4*atan(1)/180);   
+	
+	//Ts+=timeStep;
 
-   //Ts+=timeStep;
-   return;
+ 	return;
 }

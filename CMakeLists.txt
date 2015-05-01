@@ -10,11 +10,11 @@
 
 cmake_minimum_required (VERSION 2.8)
 
-project(ShadeModel)
-
+# Set the compiler
 set(CMAKE_C_COMPILER mpicc)
 set(CMAKE_CXX_COMPILER mpicxx)
 
+project(ShadeModel)
 include_directories(include)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")

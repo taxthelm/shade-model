@@ -12,19 +12,24 @@ ChangeLog
 */
 
 #include <math.h>
+
+#include "shadem.h"
+
 #include "tilt.h"
 
 void azimuth( 
-		double *azimuth, 
+		double * restrict const azimuth, 
 		double const solarAlt, 
 		double const latitude, 
 		double const declination, 
 		int const time
 		) {	
 
-	double lat_tmp = M_PI*latitude/180.0;
-	*azimuth = (sin(solarAlt)*sin(lat_tmp) - sin(declination)) / 
-		(cos(solarAlt) * cos(lat_tmp));
+	//double lat_tmp = M_PI*latitude/180.0;
+	double lat_tmp = DegToRad(latitude);
+	*azimuth = 
+		(sin(solarAlt)*sin(lat_tmp) - sin(declination)) / 
+		(cos(solarAlt)*cos(lat_tmp));
 
 	*azimuth = acos(*azimuth);
 

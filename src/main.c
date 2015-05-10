@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <math.h>
 
 #include <mpi.h>
@@ -78,11 +79,95 @@ int main(int argc, char* argv[])
 	double time1  = 0.0;
 	double deltat = 0.0;
 
+	// When running in MPI mode, this needs to be read by rank 0, then broadcasted to
+	// all other processes in the communicator. Currently read by every process. Fixing
+	// on 2015-05-02 by JDB
+
+	// unsigned char shading[288];
+    // double sizeX;
+    // double sizeY;
+    // double angleX;
+    // double angleY;
+    // double latitude;
+    // double thetaL;
+    // double thetaS;
+    // double elevation;
+
+	// Required to send a structure
+	MPI_Datatype mpi_land_data;
+	int land_data_block_lengths[9] = 
+		{288,1,1,1,1,1,1,1,1};
+
+	MPI_Datatype land_data_types[9] = 
+		{MPI_UNSIGNED_CHAR,MPI_DOUBLE,MPI_DOUBLE,
+		 MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,
+		 MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE};
+
+	MPI_Aint land_data_offset[9] = 
+		{offsetof(LandData,shading),
+		 offsetof(LandData,sizeX),
+		 offsetof(LandData,sizeY),
+		 offsetof(LandData,angleX),
+		 offsetof(LandData,angleY),
+		 offsetof(LandData,latitude),
+		 offsetof(LandData,thetaS),
+		 offsetof(LandData,elevation) };
+
+	ierr = MPI_Type_create_struct(
+			9,land_data_block_lengths,land_data_offset,
+			land_data_types,&mpi_land_data);
+
+	if ( MPI_SUCCESS != ierr) MPI_Abort(MPI_COMM_WORLD,ierr);
+
+	ierr = MPI_Type_commit(&mpi_land_data);
+
+	if (MPI_SUCCESS != ierr) MPI_Abort(MPI_COMM_WORLD,ierr);
+
+	MPI_Barrier(MPI_COMM_WORLD);	
+
+	if ( rank == 0 ) {
+
 	printf("Reading file: %s\n",fileName);
 	time0 = MPI_Wtime(); // Technically undefined until an MPI_Init routine is called.
 	ourData = extractData(fileName, &numCols, &numRows);
 	time1 = MPI_Wtime();
 	printf("Time to read and initialize data: %lf seconds\n",time1-time0);
+	}
+
+	// Basic data
+
+	if ( rank == 0 ) {
+		printf("Sending dimensions to all processors...");
+	}
+	MPI_Bcast(&numCols,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&numRows,1,MPI_INT,0,MPI_COMM_WORLD);
+
+	if ( rank == 0 ) {
+		printf("done\n");
+	} else { printf("%d\n",numCols); }
+
+	
+	// Allocate data on other processors
+	if ( rank != 0 ) {
+		ourData = (LandData*)(malloc(sizeof(LandData)*numRows*numCols));
+		if ( NULL == ourData ) MPI_Abort(MPI_COMM_WORLD,2);
+	}
+
+	if ( rank == 0 ) {
+		printf("Elevation at point %d in linear memory: %15.7lf\n",93,ourData[93].elevation);
+		printf("Sending geographic data to all processors...");
+	}
+
+	//MPI_Barrier(MPI_COMM_WORLD);
+	//MPI_Abort(MPI_COMM_WORLD,0);
+	// Structured Data (i.e., ourData), more difficult
+	MPI_Bcast(ourData,numCols*numRows,mpi_land_data,0,MPI_COMM_WORLD);
+
+	if ( rank == 0 ) {
+		printf("done\n");
+	}
+
+	printf("Elevation at point %d in linear memory: %15.7lf\n",93,ourData[93].elevation);
 
 	//Calculate the sun declination for the given day.	
 	sunDeclination(&sunDeclin,Day);
@@ -267,12 +352,5 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-
-
-
-
-
-
-
 
 

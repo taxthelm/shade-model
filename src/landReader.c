@@ -96,7 +96,7 @@ int extractData(
 	double *elevation_arr;
 	elevation_arr = (double*)malloc(sizeof(double)*numRows*numCols);
 	t1 = MPI_Wtime();
-	for (unsigned int i = 0; i < numRows*numCols; i++){
+	for (int i = 0; i < numRows*numCols; i++){
 		fscanf(input_file, "%lf ",&(elevation_arr[i]));
 	}
 	t2 = MPI_Wtime();
@@ -107,12 +107,12 @@ int extractData(
 
 	t1 = MPI_Wtime();	
 #pragma omp parallel for 
-    for(unsigned int i = 0; i < numRows; i++)
+    for(int i = 0; i < numRows; i++)
 	{
 		//structMat[i] = (LandData*)malloc(sizeof(LandData)*(numCols));
-		for(unsigned int j = 0; j < numCols; j++)
+		for(int j = 0; j < numCols; j++)
 		{
-			unsigned int index = i*numRows + j;
+			int index = i*numRows + j;
 			// Read the elevation, perhaps we can read in an elevation array, one read of the file
 			// is generally a slow process. Perhaps we can read in a very long stride, do some quick
 			// calculations, and read in again.
@@ -159,8 +159,8 @@ int extractData(
 
 	t1 = MPI_Wtime();
 #pragma omp parallel for 
-	for(unsigned int i = 0; i < (rows); i++) {
-		for(unsigned int j = 0; j < (cols); j++) {
+	for(int i = 0; i < (rows); i++) {
+		for(int j = 0; j < (cols); j++) {
 
 			//LandData temp;
 			// Lots of extra non-used memory here, potentially allocated each loop. Not needed.

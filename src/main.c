@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
 		{
 			for (j = 0; j < numCols; j++)
 			{
-				unsigned int index = i*numRows + j;
+				int index = i*numRows + j;
 
 				double currentSizeX = ourData[index].sizeX;
 				double currentSizeY = ourData[index].sizeY;

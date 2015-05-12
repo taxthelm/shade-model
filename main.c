@@ -21,7 +21,13 @@
 
 int main(int argc, char** argv)
 {	
-	//Set to the day of shading calculation
+	int rank;
+	int psize;
+	par_start(argc, argv, &psize, &rank);
+
+    double start_t, end_t;
+    start_t = MPI_Wtime();
+    //Set to the day of shading calculation
 	//January 1  = 0; December 31 = 364
 	int Day = 20;
 
@@ -71,11 +77,7 @@ int main(int argc, char** argv)
 	double ourStep;
 	double darkAngle;
 
-	int rank;
-	int psize;
-	par_start(argc, argv, &psize, &rank);
-
-	//Not including lower portions of triangular mesh
+    //Not including lower portions of triangular mesh
 	for(k = rank; k < 288; k += psize)
 	{
 		//Set the name of the current file to write to
@@ -194,7 +196,13 @@ int main(int argc, char** argv)
 	{
 		free(ourData[i]);
 	}
-	free(ourData);	
+	free(ourData);
+    MPI_Barrier(MPI_COMM_WORLD);    
+    end_t = MPI_Wtime();
+    if(rank == 0)
+    {
+        printf("Total Wall Time from parallel INIT to FINSIH: %f\n", end_t - start_t);
+    }
 	par_end( );
 	return 0;
 }

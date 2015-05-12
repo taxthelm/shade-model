@@ -11,7 +11,7 @@ main: main.o sunDeclination.o solarAltitude.o landReader.o tilt.o azimuth.o time
 main.o:	main.c
 
 parlib.o:	parlib.c parlib.h
-	$(CC) -c -DPAR_MPI=1 parlib.c parlib.h
+	$(CC) -c -DPAR_MPI=1 parlib.c
 
 sunDeclinatino.o:	sunDeclination.c
 

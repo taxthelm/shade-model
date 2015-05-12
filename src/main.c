@@ -37,7 +37,8 @@ int main(int argc, char* argv[])
 	int rank;
 	MPI_Comm_size(MPI_COMM_WORLD,&psize);
 	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-
+    double start_t, end_t;
+    start_t = MPI_Wtime();
 	//Set to the day of shading calculation
 	//January 1  = 0; December 31 = 364
 	// Do we need to consider leap years?
@@ -347,7 +348,13 @@ int main(int argc, char* argv[])
 
 	//Release all memory allocation
 	free(ourData);
-	
+    MPI_Barrier(MPI_COMM_WORLD);
+    end_t = MPI_Wtime();
+    if(rank == 0)
+    {
+        printf("Total Wall Time from parallel INIT to FINSIH: %f\n", end_t - start_t);
+    }
+
 	MPI_Finalize();
 
 	return 0;

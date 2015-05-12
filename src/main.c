@@ -111,7 +111,8 @@ int main(int argc, char* argv[])
 		 offsetof(LandData,angleX),
 		 offsetof(LandData,angleY),
 		 offsetof(LandData,latitude),
-		 offsetof(LandData,thetaS),
+		 offsetof(LandData,thetaL),
+         offsetof(LandData,thetaS),
 		 offsetof(LandData,elevation) };
 
 	ierr = MPI_Type_create_struct(

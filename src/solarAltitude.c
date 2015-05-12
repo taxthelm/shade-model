@@ -1,10 +1,19 @@
 #include <math.h>
 
+#include "shadem.h"
+
 #include "solarAltitude.h"
 
-void solarAltitude(double * solarAlt, double sunDeclination, double latitude, double localHourAngle)
+void solarAltitude(
+		double * restrict const solarAlt,
+		double const sunDeclination, 
+		double const latitude, 
+		double const localHourAngle)
 {
 	//Equation for solar altitude as found on page 25 of reading (Planetary Motions and the Distribution of Radiation)
-	*solarAlt = asin(sin(sunDeclination)*sin(latitude) + cos(sunDeclination)*cos(latitude)*cos(localHourAngle));
+	*solarAlt = asin( 
+			sin(sunDeclination)*sin(latitude) + 
+			cos(sunDeclination)*cos(latitude)*cos(localHourAngle)
+			);
 		
 }
